@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "919609837214",
+    "project_id": "gameslither-28be8",
+    "storage_bucket": "gameslither-28be8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919609837214:android:c19b91fd61459303b69d8f",
+        "android_client_info": {
+          "package_name": "com.audhighasu.slither"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBaphJAet6oap_KeXHpd5o0vzTJTKleW6A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

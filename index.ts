@@ -1,8 +1,17 @@
+﻿/**
+ * ENTRY POINT APLIKASI EXPO
+ * -------------------------
+ * File ini adalah titik masuk pertama saat app dijalankan.
+ * `registerRootComponent` mendaftarkan komponen `App` ke React Native
+ * sehingga bisa ditampilkan baik di Expo Go maupun APK native.
+ *
+ * Alur belajar: index.ts → App.tsx → screens/*
+ *
+ * ─────────────────────────────────────────
+ * Dibuat oleh Edi Suherlan · https://github.com/edisuherlan
+ */
 import { registerRootComponent } from 'expo';
 
 import App from './App';
 
-// registerRootComponent calls AppRegistry.registerComponent('main', () => App);
-// It also ensures that whether you load the app in Expo Go or in a native build,
-// the environment is set up appropriately
 registerRootComponent(App);

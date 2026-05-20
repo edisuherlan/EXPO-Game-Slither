@@ -1,0 +1,45 @@
+﻿// =============================================================================
+// FIRESTORE SECURITY RULES — Simulasi Pembelajaran
+// =============================================================================
+// File ini di-deploy ke Firebase Console → Firestore → Rules → Publish.
+// `if true` = semua client boleh baca/tulis (COCOK UNTUK LAB, BUKAN PRODUCTION).
+//
+// Koleksi yang dipakai app:
+//   slither_foods   → makanan shared
+//   slither_room    → metadata ruang
+//   scores          → riwayat permainan
+//   leaderboard     → skor terbaik per pemain
+//   games/{id}/live → posisi ular realtime
+//
+// Dibuat oleh Edi Suherlan · https://github.com/edisuherlan
+// =============================================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /slither_foods/{foodId} {
+      allow read, write: if true;
+    }
+    match /slither_room/{roomId} {
+      allow read, write: if true;
+    }
+
+    match /players/{playerId} {
+      allow read, write: if true;
+    }
+    match /scores/{scoreId} {
+      allow read, write: if true;
+    }
+    match /leaderboard/{entryId} {
+      allow read, write: if true;
+    }
+
+    match /games/{gameId} {
+      allow read, write: if true;
+      match /live/{playerId} {
+        allow read, write: if true;
+      }
+    }
+  }
+}

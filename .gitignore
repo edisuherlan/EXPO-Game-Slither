@@ -40,6 +40,8 @@ yarn-error.*
 /ios
 /android
 
-# build artifacts (unduh dari EAS, jangan commit)
+# build artifacts (unduh dari EAS, jangan commit root/build)
 *.apk
 *.aab
+# rilis unduhan di docs/ boleh di-commit
+!docs/*.apk

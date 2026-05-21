@@ -107,7 +107,7 @@ Yang perlu Anda lakukan:
 1. Pastikan **Firestore Rules** di Console project tersebut sudah di-**Publish** (salin dari `firestore.rules` di repo ini — lihat [Konfigurasi database](#-konfigurasi-database-firestore) di bawah).
 2. Jalankan `npx expo start` → main di Expo Go.
 
-> Anda **tidak** mengubah `firebaseConfig.ts` / `google-services.json` jika hanya ingin fork & modifikasi gameplay di client yang masih menulis ke project yang sama. Untuk kelas kecil ini biasanya cukup.
+> Anda **tidak** mengubah `firebaseConfig.ts` / `google-services.json` jika hanya ingin fork & modifikasi gameplay di client yang masih menulis ke project yang sama. Untuk kelas kecil ini biasanya cukup. Keduanya sudah diset ke project **`gameslither-28be8`** dan **harus tetap satu project yang sama** (lihat tabel di bawah).
 
 #### Opsi B — Firebase project sendiri (disarankan untuk fork serius)
 
@@ -121,23 +121,62 @@ Gunakan project Firebase **milik Anda** agar data multiplayer & leaderboard terp
    - Pilih region terdekat (mis. `asia-southeast1`).
 3. **Project settings → General → Your apps → Add app → Android**  
    - Package name: **`com.audhighasu.slither`** (sama dengan `app.json` → `android.package`), atau ganti package di `app.json` jika Anda pakai nama sendiri.
-   - Unduh **`google-services.json`** → letakkan di **root project** (ganti file lama).
-4. **Project settings → General → Your apps** — jika belum ada app Web, tambahkan **Web app** → salin config object.
-5. Edit **`constants/firebaseConfig.ts`** — ganti semua field:
+   - Unduh **`google-services.json`** → letakkan di **root project** (ganti file lama).  
+   - `app.json` memakai `"googleServicesFile": "./google-services.json"` — path ini wajib ada untuk **build APK native**.
+4. Buka `google-services.json` yang baru → **sesuaikan** [`constants/firebaseConfig.ts`](constants/firebaseConfig.ts) menurut tabel di bawah (jangan asal salin config Web app jika isinya beda; yang jadi acuan utama adalah **`google-services.json`**).
+5. **Firestore → Rules** → salin isi file **`firestore.rules`** dari repo → **Publish** (wajib).
+6. Restart Metro: `npx expo start -c`.
 
-```ts
-export const firebaseConfig = {
-  apiKey: '...',
-  authDomain: '....firebaseapp.com',
-  projectId: '....',
-  storageBucket: '....',
-  messagingSenderId: '...',
-  appId: '...',
-};
+#### `firebaseConfig.ts` harus selaras dengan `google-services.json`
+
+Project ini memakai **dua sumber config** untuk **satu Firebase project yang sama**:
+
+| File | Dipakai kapan | Isi |
+|------|----------------|-----|
+| [`google-services.json`](google-services.json) (root) | Build Android / EAS, native layer | Config app Android dari Firebase Console |
+| [`constants/firebaseConfig.ts`](constants/firebaseConfig.ts) | Runtime app (Expo Go, JS) — `lib/firebase.ts` | Config Firebase **Web SDK** di TypeScript |
+
+Kalau keduanya mengarah ke **project berbeda** (misalnya `google-services.json` project A, `firebaseConfig.ts` project B), gejalanya bisa aneh: build APK sukses tapi Firestore di Expo Go kosong/gagal, atau sebaliknya.
+
+**Cara mengisi `firebaseConfig.ts` dari `google-services.json`:**
+
+| Field di `firebaseConfig.ts` | Ambil dari `google-services.json` | Contoh di repo ini |
+|------------------------------|-----------------------------------|---------------------|
+| `apiKey` | `client[0].api_key[0].current_key` | `AIzaSyBaphJAet6oap_KeXHpd5o0vzTJTKleW6A` |
+| `projectId` | `project_info.project_id` | `gameslither-28be8` |
+| `storageBucket` | `project_info.storage_bucket` | `gameslither-28be8.firebasestorage.app` |
+| `messagingSenderId` | `project_info.project_number` | `919609837214` |
+| `appId` | `client[0].client_info.mobilesdk_app_id` | `1:919609837214:android:c19b91fd61459303b69d8f` |
+| `authDomain` | **Tidak ada literal di JSON** — buat dari `project_id`: `{projectId}.firebaseapp.com` | `gameslither-28be8.firebaseapp.com` |
+
+Cuplikan struktur `google-services.json` (path yang relevan):
+
+```json
+{
+  "project_info": {
+    "project_number": "919609837214",
+    "project_id": "gameslither-28be8",
+    "storage_bucket": "gameslither-28be8.firebasestorage.app"
+  },
+  "client": [{
+    "client_info": {
+      "mobilesdk_app_id": "1:919609837214:android:c19b91fd61459303b69d8f"
+    },
+    "api_key": [{ "current_key": "AIzaSyBaphJAet6oap_KeXHpd5o0vzTJTKleW6A" }]
+  }]
+}
 ```
 
-6. **Firestore → Rules** → salin isi file **`firestore.rules`** dari repo → **Publish** (wajib).
-7. Restart Metro: `npx expo start -c`.
+Hasilnya di `constants/firebaseConfig.ts` harus seperti pasangan di atas — semua field mengacu ke **project_id / project_number / app Android yang sama**.
+
+**Opsional:** Di Firebase Console Anda juga bisa menambah **Web app** dan menyalin config object; nilainya **setara** dengan tabel di atas selama `projectId` dan `appId` masih satu project. Untuk mahasiswa/fork, alur **unduh `google-services.json` → isi `firebaseConfig.ts` dari tabel** lebih jelas dan konsisten dengan build APK.
+
+**Checklist setelah ganti project:**
+
+- [ ] `project_id` di JSON = `projectId` di `firebaseConfig.ts`
+- [ ] `package_name` di JSON = `android.package` di `app.json`
+- [ ] `firestore.rules` sudah **Publish** di project yang sama
+- [ ] `npx expo start -c`
 
 **Catatan keamanan:** `apiKey` di mobile/web **bukan** rahasia mutlak; yang melindungi data adalah **Firestore Rules**. Jangan commit service account / private key.
 
@@ -292,7 +331,8 @@ lib/firebase.ts     → inisialisasi Firebase
 | `game/` | Engine, kamera, tubuh ular, tabrakan |
 | `hooks/` | `useGameLoop`, `useMultiplayer`, `useSharedFoods` |
 | `services/` | Firestore & AsyncStorage |
-| `constants/` | Balance, koleksi, `firebaseConfig.ts` |
+| `constants/` | Balance, koleksi, `firebaseConfig.ts` (selaras dengan `google-services.json`) |
+| `google-services.json` | Config Firebase Android (root) — acuan isi `firebaseConfig.ts` |
 | `firestore.rules` | Rules lab — **Publish ke Console** |
 | `docs/` | APK release, screenshot, penjelasan gameplay |
 | `eas.json` | Profil build APK |
@@ -317,6 +357,7 @@ lib/firebase.ts     → inisialisasi Firebase
 | Masalah | Kemungkinan penyebab | Solusi |
 |---------|----------------------|--------|
 | Tidak ada makanan merah / peringatan di HUD | Rules belum Publish atau project Firebase salah | Deploy `firestore.rules`, cek `firebaseConfig.ts` |
+| Expo Go OK, APK/connect aneh (atau sebaliknya) | `firebaseConfig.ts` ≠ project di `google-services.json` | Samakan keduanya dari satu `google-services.json` (lihat tabel di README) |
 | Online selalu 1 | Satu device saja, atau listener gagal | Dua HP + internet; cek Rules path `games/.../live` |
 | Expo Go error SDK | Versi Expo Go tidak 54 | Update Expo Go atau sesuaikan SDK di `package.json` |
 | Build APK gagal | `google-services.json` tidak cocok | Unduh ulang dari Firebase Android app yang package-nya sama |
